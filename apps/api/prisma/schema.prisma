@@ -1,0 +1,114 @@
+// QueroKafé — marketplace agregador de cafés especiais.
+// Docs do Prisma Schema: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Torrefação / marca parceira que anuncia seus cafés no agregador.
+model Roaster {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  websiteUrl  String
+  logoUrl     String?
+  city        String?
+  state       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coffees Coffee[]
+
+  @@map("roasters")
+}
+
+/// Café anunciado por uma torrefação. A compra acontece no site parceiro (storeUrl).
+model Coffee {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  /// Preço em centavos, para evitar imprecisão de ponto flutuante.
+  priceCents  Int
+  weightGrams Int
+  beanType    BeanType
+  roastLevel  RoastLevel
+  process     Process    @default(NATURAL)
+  origin      String
+  region      String?
+  altitude    Int?
+  /// Pontuação SCA (80–100) quando informada pela torrefação.
+  scaScore    Int?
+  /// URL de checkout na loja parceira — destino do redirecionamento.
+  storeUrl    String
+  active      Boolean    @default(true)
+  /// Quantos usuários seguiram o link para a loja parceira (métrica do agregador).
+  clickCount  Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  roasterId String
+  roaster   Roaster @relation(fields: [roasterId], references: [id], onDelete: Cascade)
+
+  flavorNotes  FlavorNote[]  @relation("CoffeeFlavorNotes")
+  brewMethods  BrewMethod[]  @relation("CoffeeBrewMethods")
+
+  @@index([roasterId])
+  @@index([beanType, roastLevel])
+  @@map("coffees")
+}
+
+/// Nota sensorial (chocolate, caramelo, frutas vermelhas...). N-N com Coffee.
+model FlavorNote {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coffees Coffee[] @relation("CoffeeFlavorNotes")
+
+  @@map("flavor_notes")
+}
+
+/// Método de preparo recomendado (espresso, V60, prensa francesa...). N-N com Coffee.
+model BrewMethod {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coffees Coffee[] @relation("CoffeeBrewMethods")
+
+  @@map("brew_methods")
+}
+
+enum BeanType {
+  ARABICA
+  ROBUSTA
+  BLEND
+}
+
+enum RoastLevel {
+  CLARA
+  MEDIA
+  MEDIA_ESCURA
+  ESCURA
+}
+
+enum Process {
+  NATURAL
+  LAVADO
+  CEREJA_DESCASCADO
+  FERMENTADO
+  HONEY
+}
