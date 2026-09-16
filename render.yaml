@@ -1,0 +1,18 @@
+# Deploy da API NestJS no Render (https://render.com).
+# O banco Postgres é provisionado à parte (Neon/Supabase/Render) e a URL vai em DATABASE_URL.
+services:
+  - type: web
+    name: querokafe-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build --workspace apps/api
+    startCommand: npm run db:deploy --workspace apps/api && node apps/api/dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
