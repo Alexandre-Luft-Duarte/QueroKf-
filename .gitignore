@@ -1,0 +1,33 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Ambiente — nunca versione credenciais
+.env
+.env.local
+.env.*.local
+
+# Prisma Client gerado (recriado por `npm run db:generate`)
+apps/api/src/generated/
+
+# Logs e cache
+*.log
+npm-debug.log*
+.turbo/
+coverage/
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
