@@ -41,7 +41,7 @@
 ```
 ┌──────────────────────┐        HTTP/JSON        ┌──────────────────────┐      SQL      ┌────────────┐
 │   apps/web           │  ────────────────────▶  │   apps/api           │  ──────────▶  │ PostgreSQL │
-│   Next.js (Vercel)   │                         │   NestJS (Render)    │   (Prisma)    │ (Supabase) │
+│   Next.js (Vercel)   │                         │   NestJS (Vercel)    │   (Prisma)    │ (Supabase) │
 │                      │  ◀────────────────────  │                      │  ◀──────────  │            │
 │  • catálogo público  │                         │  • CRUD REST         │               └────────────┘
 │  • painel admin      │                         │  • validação de DTOs │
@@ -122,7 +122,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Edite `apps/api/.env` com as duas URLs do seu banco. No Supabase elas estão em **Project Settings → Database → Connection string**:
+Edite `apps/api/.env` com as duas URLs do seu banco. No Supabase, clique no botão **Connect** (topo da página) e abra o card **Direct — Connection string**:
 
 - `DATABASE_URL` → aba **Transaction pooler** (porta 6543), usada pela API em runtime;
 - `DIRECT_URL` → aba **Session pooler** (porta 5432), usada pelas migrations e pelo seed.
@@ -213,27 +213,45 @@ curl "http://localhost:3333/api/coffees?roastLevel=CLARA&maxPrice=7000&sort=nota
 
 ## ☁️ Deploy
 
-A aplicação é publicada em duas plataformas, com o banco em um Postgres gerenciado.
+O banco fica no Supabase e os dois apps vão para a Vercel, como **dois projetos separados**
+criados a partir deste mesmo repositório — cada um apontando para uma pasta diferente.
 
 ### Banco — Supabase
 
 1. Crie um projeto em [supabase.com](https://supabase.com), escolhendo a região mais próxima e uma senha forte para o banco.
-2. Em **Project Settings → Database → Connection string**, copie as URLs do **Transaction pooler** e do **Session pooler**.
+2. Em **Connect → Direct connection string**, copie as URLs do **Transaction pooler** (porta 6543) e do **Session pooler** (porta 5432).
 
-### Backend — Render
+### Backend — Vercel (projeto 1)
 
-1. **New → Web Service**, apontando para este repositório (o [`render.yaml`](render.yaml) já traz a configuração).
-2. Variáveis de ambiente: `DATABASE_URL` e `DIRECT_URL` (do Supabase) e `CORS_ORIGIN` (a URL do frontend na Vercel).
-3. O *start command* roda `prisma migrate deploy` antes de subir a API, aplicando as migrations em produção.
-4. Health check: `/api/health`.
+1. **Add New → Project** e importe este repositório.
+2. Em **Root Directory**, selecione `apps/api`. A configuração vem de [`apps/api/vercel.json`](apps/api/vercel.json).
+3. Variáveis de ambiente:
+   - `DATABASE_URL` → Transaction pooler do Supabase
+   - `DIRECT_URL` → Session pooler do Supabase
+   - `CORS_ORIGIN` → a URL do frontend (preencha depois do projeto 2 existir)
+4. O build roda `prisma migrate deploy` antes de compilar, aplicando as migrations pendentes em produção.
+5. Ao terminar, confira `https://<sua-api>.vercel.app/api/health` — deve responder `{"status":"ok"}`.
 
-### Frontend — Vercel
+### Frontend — Vercel (projeto 2)
 
-1. **Add New → Project**, importando este repositório (o [`vercel.json`](vercel.json) já traz a configuração).
-2. Variável de ambiente: `NEXT_PUBLIC_API_URL` = `https://<sua-api>.onrender.com/api`.
-3. Após o primeiro deploy, volte ao Render e ajuste `CORS_ORIGIN` com a URL final da Vercel.
+1. **Add New → Project**, importando o mesmo repositório.
+2. Em **Root Directory**, selecione `apps/web`.
+3. Variável de ambiente: `NEXT_PUBLIC_API_URL` = `https://<sua-api>.vercel.app/api`.
+4. Volte ao projeto da API e preencha `CORS_ORIGIN` com a URL final do frontend, refazendo o deploy dela.
 
-> No plano gratuito do Render o serviço hiberna após inatividade: a primeira requisição pode levar alguns segundos.
+### Como a API roda em serverless
+
+A Vercel não mantém um processo ligado: cada requisição invoca uma função. Por isso a API tem
+dois pontos de entrada sobre a mesma configuração ([`app.factory.ts`](apps/api/src/app.factory.ts)):
+
+- [`src/main.ts`](apps/api/src/main.ts) — servidor tradicional, usado em desenvolvimento e em qualquer host Node;
+- [`api/[[...slug]].js`](apps/api/api/) — função da Vercel, uma rota *catch-all* que atende todo o `/api/*`.
+
+A instância do Nest é criada uma vez e reaproveitada pelas invocações seguintes da mesma
+função, o que mantém a conexão com o banco aberta e derruba a latência após a primeira chamada.
+
+> Como o backend é um servidor Node comum via `main.ts`, ele também roda sem alterações em
+> Render, Railway ou Fly.io — basta usar `npm run build` e `npm run start:prod`.
 
 ## 📁 Estrutura de pastas
 
@@ -241,10 +259,12 @@ A aplicação é publicada em duas plataformas, com o banco em um Postgres geren
 QueroKafe/
 ├── apps/
 │   ├── api/                      # Backend NestJS
+│   │   ├── api/                  # Função serverless da Vercel (rota catch-all)
 │   │   ├── prisma/
 │   │   │   ├── schema.prisma     # Modelo de dados
 │   │   │   ├── migrations/       # Histórico de migrations
 │   │   │   └── seed.ts           # Dados de exemplo
+│   │   ├── vercel.json           # Deploy do backend
 │   │   └── src/
 │   │       ├── coffees/          # CRUD de cafés + filtros
 │   │       ├── roasters/         # CRUD de torrefações
@@ -252,9 +272,11 @@ QueroKafe/
 │   │       ├── brew-methods/     # CRUD de métodos de preparo
 │   │       ├── prisma/           # PrismaService (conexão)
 │   │       ├── health/           # Health check
-│   │       └── main.ts           # Bootstrap: CORS, validação, Swagger
+│   │       ├── app.factory.ts    # CORS, validação e Swagger (compartilhado)
+│   │       └── main.ts           # Servidor local
 │   │
 │   └── web/                      # Frontend Next.js
+│       ├── vercel.json           # Deploy do frontend
 │       └── src/
 │           ├── app/
 │           │   ├── page.tsx          # Catálogo com filtros
@@ -264,8 +286,6 @@ QueroKafe/
 │           ├── components/           # Componentes de UI
 │           └── lib/                  # Cliente da API, tipos e formatadores
 │
-├── render.yaml                   # Configuração de deploy do backend
-├── vercel.json                   # Configuração de deploy do frontend
 └── package.json                  # Workspaces e scripts
 ```
 
