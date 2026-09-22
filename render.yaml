@@ -1,5 +1,5 @@
 # Deploy da API NestJS no Render (https://render.com).
-# O banco Postgres é provisionado à parte (Neon/Supabase/Render) e a URL vai em DATABASE_URL.
+# O banco Postgres é provisionado à parte (Supabase) e as URLs vão em DATABASE_URL/DIRECT_URL.
 services:
   - type: web
     name: querokafe-api
@@ -13,6 +13,9 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: DATABASE_URL
+        sync: false
+      # Conexão direta (Session pooler): usada pelo migrate deploy no start
+      - key: DIRECT_URL
         sync: false
       - key: CORS_ORIGIN
         sync: false

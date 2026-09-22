@@ -3,9 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { BeanType, Process, RoastLevel } from '../src/generated/prisma/enums.js';
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
-});
+// O seed grava em lote: usa a conexão direta quando disponível, como as migrations.
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL não definida. Preencha o apps/api/.env antes de rodar o seed.');
+}
+
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
 const slugify = (value: string) =>
   value

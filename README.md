@@ -41,7 +41,7 @@
 ```
 ┌──────────────────────┐        HTTP/JSON        ┌──────────────────────┐      SQL      ┌────────────┐
 │   apps/web           │  ────────────────────▶  │   apps/api           │  ──────────▶  │ PostgreSQL │
-│   Next.js (Vercel)   │                         │   NestJS (Render)    │   (Prisma)    │  (Neon)    │
+│   Next.js (Vercel)   │                         │   NestJS (Render)    │   (Prisma)    │ (Supabase) │
 │                      │  ◀────────────────────  │                      │  ◀──────────  │            │
 │  • catálogo público  │                         │  • CRUD REST         │               └────────────┘
 │  • painel admin      │                         │  • validação de DTOs │
@@ -97,7 +97,7 @@ Detalhes em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma). De
 ## 📋 Pré-requisitos
 
 - **Node.js 20 ou superior** e npm 10+
-- Um banco **PostgreSQL** (recomendado: [Neon](https://neon.tech) ou [Supabase](https://supabase.com), ambos com plano gratuito)
+- Um banco **PostgreSQL** (usamos o [Supabase](https://supabase.com), plano gratuito)
 - Git
 
 ## 🚀 Instalação e execução
@@ -122,7 +122,12 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Edite `apps/api/.env` e coloque a URL do seu Postgres em `DATABASE_URL`.
+Edite `apps/api/.env` com as duas URLs do seu banco. No Supabase elas estão em **Project Settings → Database → Connection string**:
+
+- `DATABASE_URL` → aba **Transaction pooler** (porta 6543), usada pela API em runtime;
+- `DIRECT_URL` → aba **Session pooler** (porta 5432), usada pelas migrations e pelo seed.
+
+Em ambas, troque `[YOUR-PASSWORD]` pela senha do banco definida na criação do projeto.
 
 ### 3. Preparar o banco de dados
 
@@ -152,7 +157,8 @@ Para subir os apps separadamente: `npm run dev:api` e `npm run dev:web`.
 
 | Variável | Obrigatória | Descrição |
 | --- | :---: | --- |
-| `DATABASE_URL` | ✅ | String de conexão do PostgreSQL |
+| `DATABASE_URL` | ✅ | Conexão usada pela API (Transaction pooler, porta 6543) |
+| `DIRECT_URL` | — | Conexão usada por migrations e seed (Session pooler, porta 5432). Sem ela, o Prisma usa a `DATABASE_URL` |
 | `PORT` | — | Porta da API (padrão `3333`) |
 | `CORS_ORIGIN` | — | Origens liberadas, separadas por vírgula. Em produção, a URL do frontend |
 
@@ -209,14 +215,15 @@ curl "http://localhost:3333/api/coffees?roastLevel=CLARA&maxPrice=7000&sort=nota
 
 A aplicação é publicada em duas plataformas, com o banco em um Postgres gerenciado.
 
-### Banco — Neon (ou Supabase)
+### Banco — Supabase
 
-Crie um projeto e copie a connection string (`postgresql://...?sslmode=require`).
+1. Crie um projeto em [supabase.com](https://supabase.com), escolhendo a região mais próxima e uma senha forte para o banco.
+2. Em **Project Settings → Database → Connection string**, copie as URLs do **Transaction pooler** e do **Session pooler**.
 
 ### Backend — Render
 
 1. **New → Web Service**, apontando para este repositório (o [`render.yaml`](render.yaml) já traz a configuração).
-2. Variáveis de ambiente: `DATABASE_URL` (do Neon) e `CORS_ORIGIN` (a URL do frontend na Vercel).
+2. Variáveis de ambiente: `DATABASE_URL` e `DIRECT_URL` (do Supabase) e `CORS_ORIGIN` (a URL do frontend na Vercel).
 3. O *start command* roda `prisma migrate deploy` antes de subir a API, aplicando as migrations em produção.
 4. Health check: `/api/health`.
 
