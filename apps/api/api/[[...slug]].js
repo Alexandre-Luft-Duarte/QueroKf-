@@ -14,7 +14,30 @@
  */
 import { getServerlessHandler } from '../dist/app.factory.js';
 
+/**
+ * A Vercel anexa o parâmetro da rota dinâmica à query string (`?[...slug]=coffees`).
+ * O ValidationPipe roda com `forbidNonWhitelisted`, então esse campo extra faria toda
+ * requisição com DTO de query falhar com 400 — daí a limpeza antes de entregar ao Nest.
+ */
+function stripVercelRouteParams(req) {
+  const [path, queryString] = req.url.split('?');
+
+  if (!queryString) return;
+
+  const params = new URLSearchParams(queryString);
+  for (const key of [...params.keys()]) {
+    if (key.startsWith('[')) {
+      params.delete(key);
+    }
+  }
+
+  const limpa = params.toString();
+  req.url = limpa ? `${path}?${limpa}` : path;
+}
+
 export default async function handler(req, res) {
+  stripVercelRouteParams(req);
+
   const server = await getServerlessHandler();
 
   return server(req, res);
