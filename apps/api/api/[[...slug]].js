@@ -14,25 +14,40 @@
  */
 import { getServerlessHandler } from '../dist/app.factory.js';
 
+const ehParametroDaPlataforma = (chave) => chave.startsWith('[');
+
 /**
- * A Vercel anexa o parâmetro da rota dinâmica à query string (`?[...slug]=coffees`).
- * O ValidationPipe roda com `forbidNonWhitelisted`, então esse campo extra faria toda
- * requisição com DTO de query falhar com 400 — daí a limpeza antes de entregar ao Nest.
+ * A Vercel entrega o parâmetro da rota dinâmica de duas formas: anexado à query string
+ * (`?[...slug]=coffees`) e já parseado em `req.query`. Como o ValidationPipe roda com
+ * `forbidNonWhitelisted`, esse campo extra faz qualquer requisição com DTO de query
+ * falhar com 400 — então as duas precisam ser limpas.
+ *
+ * Limpar apenas a URL não resolve: o `req.query` gravado pela plataforma é uma
+ * propriedade própria do objeto e sobrepõe o getter do Express que reparseia a URL.
  */
 function stripVercelRouteParams(req) {
   const [path, queryString] = req.url.split('?');
 
-  if (!queryString) return;
+  if (queryString) {
+    const params = new URLSearchParams(queryString);
 
-  const params = new URLSearchParams(queryString);
-  for (const key of [...params.keys()]) {
-    if (key.startsWith('[')) {
-      params.delete(key);
+    for (const chave of [...params.keys()]) {
+      if (ehParametroDaPlataforma(chave)) {
+        params.delete(chave);
+      }
     }
+
+    const limpa = params.toString();
+    req.url = limpa ? path + '?' + limpa : path;
   }
 
-  const limpa = params.toString();
-  req.url = limpa ? `${path}?${limpa}` : path;
+  if (req.query && typeof req.query === 'object') {
+    for (const chave of Object.keys(req.query)) {
+      if (ehParametroDaPlataforma(chave)) {
+        delete req.query[chave];
+      }
+    }
+  }
 }
 
 export default async function handler(req, res) {

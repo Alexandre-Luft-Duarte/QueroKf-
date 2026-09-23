@@ -11,6 +11,12 @@ export class HealthController {
   @ApiOperation({ summary: 'Verifica se a API e o banco estão respondendo' })
   async check() {
     await this.prisma.$queryRaw`SELECT 1`;
-    return { status: 'ok', timestamp: new Date().toISOString() };
+
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      // Identifica qual versão está publicada, útil para confirmar se um deploy chegou.
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local',
+    };
   }
 }
