@@ -1,6 +1,6 @@
 # ☕ QueroKafé
 
-**Marketplace agregador de cafés especiais.** O QueroKafé não vende café: ele reúne, em um só lugar, os produtos de várias torrefações e marcas, permitindo que o usuário **descubra, compare e filtre** opções por tipo de grão, torra, processo, região de origem, método de preparo, notas sensoriais e faixa de preço. Ao encontrar o café certo, o usuário é **redirecionado para a loja parceira**, onde a compra acontece.
+**Marketplace agregador de cafés especiais.** O QueroKafé não vende café: ele reúne, em um só lugar, os produtos de várias torrefações e marcas, permitindo que o usuário **descubra, compare e filtre** opções por tipo de grão, torra, processo, região de origem, método de preparo, notas sensoriais e faixa de preço. Ao encontrar o café certo, o usuário é **redirecionado para a loja parceira**, onde a compra do café selecionado acontece.
 
 - **Valor para o consumidor:** economizar tempo e decidir com mais clareza, sem visitar dezenas de sites.
 - **Valor para a torrefação:** visibilidade e tráfego qualificado.
