@@ -112,7 +112,7 @@ npm install
 
 O `npm install` na raiz instala as dependências dos dois apps (npm workspaces).
 
-### 2. Configurar as variáveis de ambientes
+### 2. Configurar as variáveis de ambiente
 
 ```bash
 # Backend
