@@ -1,11 +1,11 @@
 # ☕ QueroKafé
 
-**Marketplace agregador de cafés especiais.** O QueroKafé não vende café: ele reúne, em um só lugar, os produtos de várias torrefações e marcas, permitindo que o usuário **descubra, compare e filtre** opções por tipo de grão, torra, processo, região de origem, método de preparo, notas sensoriais e faixa de preço. Ao encontrar o café certo, o usuário é **redirecionado para a loja parceira**, onde a compra acontece
+**Marketplace agregador de cafés especiais.** O QueroKafé não vende café: ele reúne, em um só lugar, os produtos de várias torrefações e marcas, permitindo que o usuário **descubra, compare e filtre** opções por tipo de grão, torra, processo, região de origem, método de preparo, notas sensoriais e faixa de preço. Ao encontrar o café certo, o usuário é **redirecionado para a loja parceira**, onde a compra acontece.
 
-- **Valor para o consumidor:** economizar tempo e decidir com mais clareza, sem visitar dezenas de sites
-- **Valor para a torrefação:** visibilidade e tráfego qualificado
+- **Valor para o consumidor:** economizar tempo e decidir com mais clareza, sem visitar dezenas de sites.
+- **Valor para a torrefação:** visibilidade e tráfego qualificado.
 
-> **Escopo deste MVP:** camada de descoberta (catálogo, filtros e redirecionamento) + painel administrativo com CRUD completo das entidades. Evoluir para um e-commerce com checkout próprio é uma fase futura
+> **Escopo deste MVP:** camada de descoberta (catálogo, filtros e redirecionamento) + painel administrativo com CRUD completo das entidades. Evoluir para um e-commerce com checkout próprio é uma fase futura.
 
 ---
 
