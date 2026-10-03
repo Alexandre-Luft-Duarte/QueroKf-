@@ -5,7 +5,7 @@
 - **Valor para o consumidor:** economizar tempo e decidir com mais clareza, sem visitar dezenas de sites.
 - **Valor para a torrefação:** visibilidade e tráfego qualificado.
 
-> **Escopo deste MVP:** camada de descoberta (catálogo, filtros e redirecionamento) + painel administrativo com CRUD completo das entidades. Evoluir para um e-commerce com checkout próprio é uma fase .
+> **Escopo deste MVP:** camada de descoberta (catálogo, filtros e redirecionamento) + painel administrativo com CRUD completo das entidades. Evoluir para um e-commerce com checkout próprio é uma fase futura.
 
 ---
 
