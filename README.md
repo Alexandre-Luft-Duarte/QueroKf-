@@ -245,7 +245,7 @@ A Vercel não mantém um processo ligado: cada requisição invoca uma função.
 dois pontos de entrada sobre a mesma configuração ([`app.factory.ts`](apps/api/src/app.factory.ts)):
 
 - [`src/main.ts`](apps/api/src/main.ts) — servidor tradicional, usado em desenvolvimento e em qualquer host Node;
-- [`api/[[...slug]].js`](apps/api/api/) — função da Vercel, uma rota *catch-all* que atende todo o `/api/*`.
+- [`api/index.js`](apps/api/api/index.js) — função da Vercel; um *rewrite* no `vercel.json` encaminha todo o `/api/*` para ela.
 
 A instância do Nest é criada uma vez e reaproveitada pelas invocações seguintes da mesma
 função, o que mantém a conexão com o banco aberta e derruba a latência após a primeira chamada.

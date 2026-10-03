@@ -3,9 +3,10 @@
   "framework": null,
   "buildCommand": "npm run db:deploy && npm run build",
   "functions": {
-    "api/[[...slug]].js": {
+    "api/index.js": {
       "maxDuration": 30
     }
   },
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }],
   "outputDirectory": "public"
 }

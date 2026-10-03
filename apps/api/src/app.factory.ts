@@ -7,7 +7,7 @@ import { AppModule } from './app.module.js';
 
 /**
  * Configuração compartilhada pelos dois modos de execução:
- * servidor tradicional (main.ts) e função serverless na Vercel (api/[[...slug]].js).
+ * servidor tradicional (main.ts) e função serverless na Vercel (api/index.js).
  */
 export async function createApp(expressInstance?: Express): Promise<INestApplication> {
   const app = expressInstance
